@@ -1,0 +1,14 @@
+target/
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+
+# Test and build output
+surefire-reports/
+*.log
