@@ -26,8 +26,7 @@ public class Hooks {
         browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
                         .setChannel("chromium")
-                        .setHeadless(false)
-                        .setSlowMo(500));
+                        .setHeadless(false));
         context = browser.newContext(
                 new Browser.NewContextOptions()
                         .setViewportSize(1440, 900));
