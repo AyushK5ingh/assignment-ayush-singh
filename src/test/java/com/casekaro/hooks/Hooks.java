@@ -23,10 +23,12 @@ public class Hooks {
     @Before
     public void setUp() {
         playwright = Playwright.create();
+        String headlessProp = System.getProperty("headless", "false");
+        boolean isHeadless = Boolean.parseBoolean(headlessProp);
         browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
                         .setChannel("chromium")
-                        .setHeadless(false));
+                        .setHeadless(isHeadless));
         context = browser.newContext(
                 new Browser.NewContextOptions()
                         .setViewportSize(1440, 900));
