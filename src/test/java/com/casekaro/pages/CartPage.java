@@ -17,12 +17,11 @@ public class CartPage {
     private final Page page;
 
     private static final String CART_DRAWER = "#CartDrawer";
-    private static final String CART_ITEMS = "#CartDrawer .cart-item";
+    private static final String CART_ITEMS = ".cart-item";
     private static final String CART_ITEM_NAME = ".cart-item__name";
     private static final String CART_ITEM_VARIANT = ".product-option dd";
     private static final String CART_ITEM_PRICE = ".cart-item__price-wrapper .price";
     private static final String CART_CLOSE_BUTTON = "#CartDrawer button[aria-label='Close']";
-    private static final String CART_ICON = "a[href='/cart']";
 
     public CartPage(Page page) {
         this.page = page;
@@ -51,7 +50,8 @@ public class CartPage {
         List<Locator> items = page.locator(CART_ITEMS).all();
 
         for (Locator item : items) {
-            if (!item.isVisible()) continue;
+            if (!item.isVisible())
+                continue;
 
             Map<String, String> details = new LinkedHashMap<>();
 
@@ -123,10 +123,7 @@ public class CartPage {
      * Open the cart drawer from the cart icon.
      */
     public void openCartDrawer() {
-        Locator cartIcon = page.locator(CART_ICON);
-        if (cartIcon.count() > 0) {
-            cartIcon.first().click();
-        }
-        page.locator(CART_DRAWER).waitFor();
+        page.navigate("https://casekaro.com/cart");
+        page.locator(CART_ITEMS).first().waitFor();
     }
 }

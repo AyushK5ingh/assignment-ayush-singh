@@ -8,7 +8,8 @@ import java.util.List;
 
 /**
  * Page Object for the Product Listing/Collection page and quick-add modal.
- * Handles product card interactions, material variant selection, and add-to-cart.
+ * Handles product card interactions, material variant selection, and
+ * add-to-cart.
  */
 public class ProductListPage {
 

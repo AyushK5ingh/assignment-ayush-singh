@@ -103,12 +103,12 @@ public class CaseKaroSteps {
                 "URL should contain 'phone-cases-by-model'. Actual URL: " + currentUrl);
     }
 
-        @Then("I should see a no results message for the search")
-        public void iShouldSeeANoResultsMessageForTheSearch() {
+    @Then("I should see a no results message for the search")
+    public void iShouldSeeANoResultsMessageForTheSearch() {
         assertTrue(currentSearchResultsText.toLowerCase().contains("no models found"),
-            "Search results should show a no models found message. Actual text: " + currentSearchResultsText);
+                "Search results should show a no models found message. Actual text: " + currentSearchResultsText);
         assertTrue(currentSuggestions.isEmpty(),
-            "Suggestion list should be empty when the search yields no results. Found: " + currentSuggestions);
+                "Suggestion list should be empty when the search yields no results. Found: " + currentSuggestions);
     }
 
     @Then("I should NOT see {string} in the suggestions")
