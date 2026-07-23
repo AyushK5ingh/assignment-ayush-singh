@@ -16,12 +16,11 @@ public class CartPage {
 
     private final Page page;
 
-    // Selectors for the cart drawer
     private static final String CART_DRAWER = "#CartDrawer";
-    private static final String CART_ITEMS = ".cart-item";
-    private static final String CART_ITEM_NAME = "a[href*='/products/']";
-    private static final String CART_ITEM_VARIANT = ".product-option";
-    private static final String CART_ITEM_PRICE = ".price";
+    private static final String CART_ITEMS = "#CartDrawer .cart-item";
+    private static final String CART_ITEM_NAME = ".cart-item__name";
+    private static final String CART_ITEM_VARIANT = ".product-option dd";
+    private static final String CART_ITEM_PRICE = ".cart-item__price-wrapper .price";
     private static final String CART_CLOSE_BUTTON = "#CartDrawer button[aria-label='Close']";
     private static final String CART_ICON = "a[href='/cart']";
 
@@ -33,8 +32,6 @@ public class CartPage {
      * Get the number of items currently in the cart drawer.
      */
     public int getCartItemCount() {
-        page.waitForTimeout(1000);
-        // Try to find cart items in the drawer
         List<Locator> items = page.locator(CART_ITEMS).all();
         int visibleCount = 0;
         for (Locator item : items) {
@@ -50,7 +47,6 @@ public class CartPage {
      * Returns a list of maps with keys: "material", "price", "link".
      */
     public List<Map<String, String>> getCartItemDetails() {
-        page.waitForTimeout(1000);
         List<Map<String, String>> itemDetails = new ArrayList<>();
         List<Locator> items = page.locator(CART_ITEMS).all();
 
@@ -59,23 +55,22 @@ public class CartPage {
 
             Map<String, String> details = new LinkedHashMap<>();
 
-            // Get material/variant info
             Locator variantLocator = item.locator(CART_ITEM_VARIANT);
-            String material = "N/A";
+            String material = "";
             if (variantLocator.count() > 0 && variantLocator.first().isVisible()) {
-                material = variantLocator.first().textContent().trim();
+                String variantText = variantLocator.first().textContent();
+                material = variantText == null ? "" : variantText.trim();
             }
 
-            // Get price
             Locator priceLocator = item.locator(CART_ITEM_PRICE);
-            String price = "N/A";
+            String price = "";
             if (priceLocator.count() > 0 && priceLocator.first().isVisible()) {
-                price = priceLocator.first().textContent().trim();
+                String priceText = priceLocator.first().textContent();
+                price = priceText == null ? "" : priceText.trim();
             }
 
-            // Get product link
             Locator linkLocator = item.locator(CART_ITEM_NAME);
-            String link = "N/A";
+            String link = "";
             if (linkLocator.count() > 0) {
                 String href = linkLocator.first().getAttribute("href");
                 if (href != null) {
@@ -118,14 +113,20 @@ public class CartPage {
      * Close the cart drawer by clicking the close button.
      */
     public void closeCartDrawer() {
-        // Try the close button first
         Locator closeBtn = page.locator(CART_CLOSE_BUTTON);
         if (closeBtn.count() > 0 && closeBtn.first().isVisible()) {
             closeBtn.first().click();
-        } else {
-            // Fallback: press Escape
-            page.keyboard().press("Escape");
         }
-        page.waitForTimeout(1000);
+    }
+
+    /**
+     * Open the cart drawer from the cart icon.
+     */
+    public void openCartDrawer() {
+        Locator cartIcon = page.locator(CART_ICON);
+        if (cartIcon.count() > 0) {
+            cartIcon.first().click();
+        }
+        page.locator(CART_DRAWER).waitFor();
     }
 }

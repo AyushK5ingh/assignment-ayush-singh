@@ -6,7 +6,6 @@ import com.casekaro.pages.HomePage;
 import com.casekaro.pages.ProductListPage;
 import com.microsoft.playwright.Page;
 
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -29,6 +28,7 @@ public class CaseKaroSteps {
     private CartPage cartPage;
 
     private List<String> currentSuggestions;
+    private String currentSearchResultsText;
 
     private void initPages() {
         page = Hooks.getPage();
@@ -58,12 +58,14 @@ public class CaseKaroSteps {
     public void iSearchForInThePhoneModelSearchBox(String searchTerm) {
         homePage.searchPhoneModel(searchTerm);
         currentSuggestions = homePage.getSuggestionTexts();
+        currentSearchResultsText = homePage.getSearchResultsText();
     }
 
     @When("I clear the search box and search for {string}")
     public void iClearTheSearchBoxAndSearchFor(String searchTerm) {
         homePage.clearAndSearch(searchTerm);
         currentSuggestions = homePage.getSuggestionTexts();
+        currentSearchResultsText = homePage.getSearchResultsText();
     }
 
     @When("I click on exactly {string} from the suggestions")
@@ -86,6 +88,11 @@ public class CaseKaroSteps {
         cartPage.closeCartDrawer();
     }
 
+    @When("I open the cart")
+    public void iOpenTheCart() {
+        cartPage.openCartDrawer();
+    }
+
     // ==================== THEN ====================
 
     @Then("I should be on the phone cases by model page")
@@ -96,15 +103,12 @@ public class CaseKaroSteps {
                 "URL should contain 'phone-cases-by-model'. Actual URL: " + currentUrl);
     }
 
-    @Then("I should see Apple or iPhone related suggestions")
-    public void iShouldSeeAppleOrIphoneRelatedSuggestions() {
-        assertFalse(currentSuggestions.isEmpty(),
-                "Suggestions list should not be empty when searching for Apple/iPhone models");
-
-        boolean hasAppleOrIphone = currentSuggestions.stream()
-                .anyMatch(s -> s.toLowerCase().contains("iphone") || s.toLowerCase().contains("apple"));
-        assertTrue(hasAppleOrIphone,
-                "Suggestions should contain Apple/iPhone related models. Found: " + currentSuggestions);
+        @Then("I should see a no results message for the search")
+        public void iShouldSeeANoResultsMessageForTheSearch() {
+        assertTrue(currentSearchResultsText.toLowerCase().contains("no models found"),
+            "Search results should show a no models found message. Actual text: " + currentSearchResultsText);
+        assertTrue(currentSuggestions.isEmpty(),
+            "Suggestion list should be empty when the search yields no results. Found: " + currentSuggestions);
     }
 
     @Then("I should NOT see {string} in the suggestions")
@@ -144,7 +148,8 @@ public class CaseKaroSteps {
 
         System.out.println("Available material variants: " + variants);
 
-        // Check that required materials exist (case-insensitive partial match since label text may vary)
+        // Check that required materials exist (case-insensitive partial match since
+        // label text may vary)
         boolean hasMaterial1 = variants.stream()
                 .anyMatch(v -> v.toLowerCase().contains(material1.toLowerCase()));
         boolean hasMaterial2 = variants.stream()
@@ -168,14 +173,13 @@ public class CaseKaroSteps {
     public void iPrintAllCartItemDetailsToConsole() {
         cartPage.printCartDetails();
 
-        // Also validate that we can retrieve details
         List<Map<String, String>> items = cartPage.getCartItemDetails();
         assertFalse(items.isEmpty(), "Cart item details should not be empty");
 
         for (Map<String, String> item : items) {
-            assertNotNull(item.get("material"), "Material should not be null");
-            assertNotNull(item.get("price"), "Price should not be null");
-            assertNotNull(item.get("link"), "Link should not be null");
+            assertFalse(item.get("material").isBlank(), "Material should not be blank");
+            assertFalse(item.get("price").isBlank(), "Price should not be blank");
+            assertFalse(item.get("link").isBlank(), "Link should not be blank");
         }
     }
 }

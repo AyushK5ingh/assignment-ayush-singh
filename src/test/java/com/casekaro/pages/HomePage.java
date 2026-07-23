@@ -15,9 +15,6 @@ public class HomePage {
 
     private final Page page;
 
-    // Selectors
-    private static final String MOBILE_COVERS_NAV_LINK = "a[href*='phone-cases-by-model']:visible";
-    private static final String MOBILE_COVERS_DRAWER_LINK = "#HeaderDrawer a[href*='phone-cases-by-model']";
     private static final String MODEL_SEARCH_INPUT = "#modelSearch";
     private static final String SUGGESTION_CONTAINER = "#searchResults";
     private static final String SUGGESTION_ITEMS = "#searchResults a";
@@ -41,21 +38,12 @@ public class HomePage {
         Locator navByName = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Mobile Covers"));
         if (navByName.count() > 0) {
             navByName.first().click();
-            page.waitForLoadState();
+            page.waitForURL("**/pages/phone-cases-by-model");
             return;
         }
 
-        Locator visibleNavLink = page.locator(MOBILE_COVERS_NAV_LINK).first();
-        if (visibleNavLink.count() > 0) {
-            visibleNavLink.click();
-            page.waitForLoadState();
-            return;
-        }
-
-        // Fallback for mobile view where link is inside the header drawer.
-        page.locator("summary.header__icon--menu").first().click();
-        page.locator(MOBILE_COVERS_DRAWER_LINK).first().click();
-        page.waitForLoadState();
+        page.locator("#HeaderMenu-mobile-covers, #HeaderDrawer-mobile-covers").first().click();
+        page.waitForURL("**/pages/phone-cases-by-model");
     }
 
     /**
@@ -64,34 +52,30 @@ public class HomePage {
     public void searchPhoneModel(String model) {
         Locator searchInput = page.locator(MODEL_SEARCH_INPUT);
         searchInput.scrollIntoViewIfNeeded();
+        searchInput.click();
         searchInput.fill(model);
-        // Wait for suggestions to appear
-        page.waitForTimeout(1500);
+        page.locator(SUGGESTION_CONTAINER).waitFor();
+        page.waitForTimeout(1000);
     }
 
     /**
      * Clear the search box and type a new search query.
      */
     public void clearAndSearch(String model) {
-        Locator searchInput = page.locator(MODEL_SEARCH_INPUT);
-        searchInput.scrollIntoViewIfNeeded();
-        searchInput.fill("");
-        searchInput.fill(model);
-        // Wait for suggestions to appear
-        page.waitForTimeout(1500);
+        page.locator(MODEL_SEARCH_INPUT).fill("");
+        searchPhoneModel(model);
     }
 
     /**
      * Get all visible suggestion texts from the autocomplete dropdown.
      */
     public List<String> getSuggestionTexts() {
-        page.locator(SUGGESTION_CONTAINER).waitFor();
         List<Locator> items = page.locator(SUGGESTION_ITEMS).all();
         List<String> texts = new ArrayList<>();
         for (Locator item : items) {
             if (item.isVisible()) {
-                String text = item.textContent().trim();
-                if (!text.isEmpty()) {
+                String text = item.textContent();
+                if (text != null && !text.trim().isEmpty()) {
                     texts.add(text);
                 }
             }
@@ -100,7 +84,16 @@ public class HomePage {
     }
 
     /**
-     * Check if any suggestion text contains the given brand name (case-insensitive).
+     * Get the current text shown in the search results container.
+     */
+    public String getSearchResultsText() {
+        String text = page.locator(SUGGESTION_CONTAINER).textContent();
+        return text == null ? "" : text.trim();
+    }
+
+    /**
+     * Check if any suggestion text contains the given brand name
+     * (case-insensitive).
      */
     public boolean hasSuggestionContaining(String text) {
         List<String> suggestions = getSuggestionTexts();
@@ -110,7 +103,8 @@ public class HomePage {
 
     /**
      * Click on a specific suggestion by exact text match.
-     * Uses exact matching to avoid clicking "iPhone 16 Pro Max" when targeting "iPhone 16 Pro".
+     * Uses exact matching to avoid clicking "iPhone 16 Pro Max" when targeting
+     * "iPhone 16 Pro".
      */
     public void clickExactSuggestion(String exactText) {
         page.locator(SUGGESTION_CONTAINER).waitFor();
@@ -118,10 +112,10 @@ public class HomePage {
         List<Locator> items = suggestions.all();
 
         for (Locator item : items) {
-            String itemText = item.textContent().trim();
-            if (itemText.equalsIgnoreCase(exactText)) {
+            String itemText = item.textContent();
+            if (itemText != null && itemText.trim().equalsIgnoreCase(exactText)) {
                 item.click();
-                page.waitForLoadState();
+                page.locator("button.quick-add__submit:has-text('Choose options')").first().waitFor();
                 return;
             }
         }

@@ -23,16 +23,19 @@ public class Hooks {
     @Before
     public void setUp() {
         playwright = Playwright.create();
-        browser = playwright.chromium().launch(
+        browser = playwright.firefox().launch(
                 new BrowserType.LaunchOptions()
                         .setHeadless(false)
-                        .setSlowMo(500)
-        );
+                        .setSlowMo(500));
         context = browser.newContext(
                 new Browser.NewContextOptions()
-                        .setViewportSize(1440, 900)
-        );
+                        .setViewportSize(1440, 900));
         page = context.newPage();
+        String devMode = System.getProperty("playwright.dev", System.getenv("PLAYWRIGHT_DEV"));
+        if (devMode != null && devMode.equalsIgnoreCase("true")) {
+            System.out.println("Playwright dev-mode enabled - pausing to open Inspector...");
+            page.pause();
+        }
     }
 
     @After

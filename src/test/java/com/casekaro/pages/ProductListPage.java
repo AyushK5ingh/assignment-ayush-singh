@@ -2,7 +2,6 @@ package com.casekaro.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.WaitForSelectorState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +14,10 @@ public class ProductListPage {
 
     private final Page page;
 
-    // Selectors for product grid
-    private static final String CHOOSE_OPTIONS_BUTTON = "button:has-text('Choose options')";
-    private static final String PRODUCT_CARD_FIRST = ".card-information";
-
-    // Selectors for the quick-add modal
     private static final String QUICK_ADD_MODAL = "[id^='QuickAddInfo-']";
-    private static final String MATERIAL_VARIANT_FIELDSET = "fieldset";
-    private static final String VARIANT_LABEL = "fieldset label";
-    private static final String ADD_TO_CART_BUTTON = "button[type='submit']:has-text('Add to cart')";
-    private static final String PRODUCT_PRICE = ".price-item--sale, .price-item--regular";
+    private static final String CHOOSE_OPTIONS_BUTTON = "button.quick-add__submit:has-text('Choose options')";
+    private static final String VARIANT_LABEL = QUICK_ADD_MODAL + " fieldset label";
+    private static final String ADD_TO_CART_BUTTON = QUICK_ADD_MODAL + " button.product-form__submit";
 
     public ProductListPage(Page page) {
         this.page = page;
@@ -38,20 +31,19 @@ public class ProductListPage {
         Locator chooseBtn = page.locator(CHOOSE_OPTIONS_BUTTON).first();
         chooseBtn.scrollIntoViewIfNeeded();
         chooseBtn.click();
-        // Wait for the quick-add modal to appear
-        page.waitForTimeout(2000);
+        visibleQuickAddModal().waitFor();
     }
 
     /**
      * Get all available material variant names from the quick-add modal.
      */
     public List<String> getMaterialVariants() {
-        page.waitForTimeout(1000);
-        List<Locator> labels = page.locator(VARIANT_LABEL).all();
+        Locator modal = visibleQuickAddModal();
+        List<Locator> labels = modal.locator("fieldset label").all();
         List<String> variants = new ArrayList<>();
         for (Locator label : labels) {
             if (label.isVisible()) {
-                String text = label.textContent().trim();
+                String text = normalizeVariantLabel(label.textContent());
                 if (!text.isEmpty()) {
                     variants.add(text);
                 }
@@ -64,13 +56,12 @@ public class ProductListPage {
      * Select a specific material variant by clicking its label.
      */
     public void selectMaterial(String material) {
-        Locator labels = page.locator(VARIANT_LABEL);
-        List<Locator> allLabels = labels.all();
+        Locator modal = visibleQuickAddModal();
+        List<Locator> allLabels = modal.locator("fieldset label").all();
 
         for (Locator label : allLabels) {
-            if (label.isVisible() && label.textContent().trim().equalsIgnoreCase(material)) {
+            if (label.isVisible() && normalizeVariantLabel(label.textContent()).equalsIgnoreCase(material)) {
                 label.click();
-                page.waitForTimeout(500);
                 return;
             }
         }
@@ -81,11 +72,10 @@ public class ProductListPage {
      * Click the "Add to cart" button in the quick-add modal.
      */
     public void clickAddToCart() {
-        Locator addBtn = page.locator(ADD_TO_CART_BUTTON).last();
+        Locator addBtn = visibleQuickAddModal().locator("button.product-form__submit");
         addBtn.scrollIntoViewIfNeeded();
         addBtn.click();
-        // Wait for cart drawer to open
-        page.waitForTimeout(2000);
+        page.locator("#CartDrawer").waitFor();
     }
 
     /**
@@ -100,6 +90,19 @@ public class ProductListPage {
      * Get the first product name from the listing page.
      */
     public String getFirstProductName() {
-        return page.locator(PRODUCT_CARD_FIRST).first().textContent().trim();
+        return page.locator(".card-information").first().textContent().trim();
+    }
+
+    private String normalizeVariantLabel(String rawText) {
+        if (rawText == null) {
+            return "";
+        }
+
+        String[] lines = rawText.trim().split("\\R");
+        return lines.length == 0 ? "" : lines[0].trim();
+    }
+
+    private Locator visibleQuickAddModal() {
+        return page.locator(QUICK_ADD_MODAL + ":visible").first();
     }
 }
