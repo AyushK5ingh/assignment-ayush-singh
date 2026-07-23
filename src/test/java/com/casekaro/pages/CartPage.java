@@ -67,7 +67,7 @@ public class CartPage {
             String price = "";
             if (priceLocator.count() > 0 && priceLocator.first().isVisible()) {
                 String priceText = priceLocator.first().textContent();
-                price = priceText == null ? "" : priceText.trim();
+                price = normalizePriceText(priceText);
             }
 
             Locator linkLocator = item.locator(CART_ITEM_NAME);
@@ -139,5 +139,18 @@ public class CartPage {
         page.locator(CART_ITEMS).first().waitFor(new Locator.WaitForOptions()
                 .setTimeout(10000)
                 .setState(WaitForSelectorState.ATTACHED));
+    }
+
+    private String normalizePriceText(String priceText) {
+        if (priceText == null) {
+            return "";
+        }
+
+        String trimmed = priceText.trim();
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+
+        return trimmed.replaceFirst("^[^0-9]+", "Rs. ");
     }
 }
