@@ -1,14 +1,28 @@
+# Maven / build output
 target/
+surefire-reports/
+
+# Java / Eclipse
 .classpath
 .project
 .settings/
+
+# IntelliJ / VS Code
 .idea/
 *.iml
+.vscode/
 
-# OS and editor files
+# OS files
 .DS_Store
 Thumbs.db
 
-# Test and build output
-surefire-reports/
+# Logs
 *.log
+
+# Playwright
+/test-results/
+/playwright-report/
+
+# Temporary files
+*.tmp
+*.temp

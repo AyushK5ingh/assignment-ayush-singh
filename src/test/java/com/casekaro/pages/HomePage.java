@@ -16,7 +16,8 @@ public class HomePage {
     private final Page page;
 
     // Selectors
-    private static final String MOBILE_COVERS_NAV_LINK = "a[href*='phone-cases-by-model']";
+    private static final String MOBILE_COVERS_NAV_LINK = "a[href*='phone-cases-by-model']:visible";
+    private static final String MOBILE_COVERS_DRAWER_LINK = "#HeaderDrawer a[href*='phone-cases-by-model']";
     private static final String MODEL_SEARCH_INPUT = "#modelSearch";
     private static final String SUGGESTION_CONTAINER = "#searchResults";
     private static final String SUGGESTION_ITEMS = "#searchResults a";
@@ -37,7 +38,23 @@ public class HomePage {
      * Click on "Mobile Covers" link in the top navigation menu.
      */
     public void clickMobileCovers() {
-        page.locator(MOBILE_COVERS_NAV_LINK).first().click();
+        Locator navByName = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Mobile Covers"));
+        if (navByName.count() > 0) {
+            navByName.first().click();
+            page.waitForLoadState();
+            return;
+        }
+
+        Locator visibleNavLink = page.locator(MOBILE_COVERS_NAV_LINK).first();
+        if (visibleNavLink.count() > 0) {
+            visibleNavLink.click();
+            page.waitForLoadState();
+            return;
+        }
+
+        // Fallback for mobile view where link is inside the header drawer.
+        page.locator("summary.header__icon--menu").first().click();
+        page.locator(MOBILE_COVERS_DRAWER_LINK).first().click();
         page.waitForLoadState();
     }
 
