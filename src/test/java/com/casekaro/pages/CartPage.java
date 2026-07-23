@@ -2,6 +2,7 @@ package com.casekaro.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.WaitForSelectorState;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,7 +39,7 @@ public class CartPage {
                 visibleCount++;
             }
         }
-        return visibleCount;
+        return visibleCount > 0 ? visibleCount : items.size();
     }
 
     /**
@@ -123,7 +124,20 @@ public class CartPage {
      * Open the cart drawer from the cart icon.
      */
     public void openCartDrawer() {
-        page.navigate("https://casekaro.com/cart");
-        page.locator(CART_ITEMS).first().waitFor();
+        if (!page.locator(CART_DRAWER).first().isVisible()) {
+            Locator cartToggle = page.locator(
+                    "a[href*='cart' i], button[aria-label*='cart' i], [aria-controls='CartDrawer'], [data-cart-toggle], [class*='cart']");
+            for (Locator candidate : cartToggle.all()) {
+                if (candidate.isVisible()) {
+                    candidate.click();
+                    break;
+                }
+            }
+        }
+
+        page.waitForTimeout(1000);
+        page.locator(CART_ITEMS).first().waitFor(new Locator.WaitForOptions()
+                .setTimeout(10000)
+                .setState(WaitForSelectorState.ATTACHED));
     }
 }

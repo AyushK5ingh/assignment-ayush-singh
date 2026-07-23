@@ -23,8 +23,9 @@ public class Hooks {
     @Before
     public void setUp() {
         playwright = Playwright.create();
-        browser = playwright.firefox().launch(
+        browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
+                        .setChannel("chromium")
                         .setHeadless(false)
                         .setSlowMo(500));
         context = browser.newContext(
