@@ -15,7 +15,7 @@ public class ProductListPage {
 
     private final Page page;
 
-    private static final String QUICK_ADD_MODAL = "[id^='QuickAddInfo-']";
+    private static final String QUICK_ADD_MODAL = "[id^='QuickAdd-']";
     private static final String CHOOSE_OPTIONS_BUTTON = "button.quick-add__submit:has-text('Choose options')";
     private static final String VARIANT_LABEL = QUICK_ADD_MODAL + " fieldset label";
     private static final String ADD_TO_CART_BUTTON = QUICK_ADD_MODAL + " button.product-form__submit";
